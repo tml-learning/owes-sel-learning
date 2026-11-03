@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>天空之心・漚汪 SEL 探索群島｜3D 社會情緒學習互動網</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- 開場雲端微縮模型歡迎畫面 -->
+  <div class="intro-screen" id="introScreen">
+    <div class="intro-emblem">🏰</div>
+    <h1>天空之心・漚汪 SEL 探索群島</h1>
+    <p>
+      漂浮於雲海中的 6 座溫暖手作微縮模型 3D 浮空島，整合漚汪國小五大社會情緒學習架構與一至六年級共 30 堂互動課程網頁。<br />
+      所有樹木與花叢皆隨高空微風輕柔搖曳，點擊上方各島導覽鈕或左側課程清單，即可拉近鏡頭細看主題造景、植物細節與島上走動人物！
+    </p>
+    <button class="intro-Enter-btn" id="introEnterBtn">✨ 進入天空之心探索群島</button>
+  </div>
+
+  <!-- Three.js 3D 浮空島畫布與 HTML 懸浮標籤層 -->
+  <canvas id="stage"></canvas>
+  <div id="labels"></div>
+
+  <!-- 頂部導覽列：品牌 + 上方各島導覽鈕 + 天氣/天色切換 -->
+  <header class="topbar">
+    <div class="brand" id="brandHome" title="回到天空之心群島全景">
+      <div class="brand-badge">島</div>
+      <div class="brand-title">
+        <strong>天空之心・漚汪 SEL 探索群島</strong>
+        <span>五大浮空島・1~6 年級 30 堂互動課程</span>
+      </div>
+    </div>
+
+    <!-- 上方各島導覽鈕 -->
+    <nav class="island-nav" id="islandNav" aria-label="浮空島快速導覽"></nav>
+
+    <div class="top-right">
+      <div class="weather-pill" id="weatherPill" title="點擊切換晨曦 / 夕暮 / 星夜天色">
+        <span class="dot-live"></span>
+        <span id="weatherText">☀️ 晨曦雲海・微風搖曳</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 左側課程清單展開標籤（當側欄收合時顯示） -->
+  <button class="sidebar-toggle-tab" id="btnOpenSidebarTab" title="展開左側 30 堂 SEL 課程清單">
+    📚 展開課程清單 (30堂)
+  </button>
+
+  <!-- 左側課程清單 (Left Course List Sidebar) -->
+  <aside class="left-sidebar" id="leftSidebar" aria-label="左側 SEL 課程清單">
+    <div class="sidebar-header">
+      <div class="sidebar-title-row">
+        <h2>
+          <span>📚 左側課程清單</span>
+          <span class="sidebar-count-badge" id="sidebarCount">共 30 堂課</span>
+        </h2>
+        <button class="sidebar-collapse-btn" id="btnCollapseSidebar" title="收合側邊清單以全螢幕欣賞 3D 浮空島">◀</button>
+      </div>
+      <div class="sidebar-search-row">
+        <input
+          type="search"
+          id="sidebarSearch"
+          class="sidebar-search"
+          placeholder="搜尋課程、情緒溫度計、呼吸、和平圈..."
+        />
+      </div>
+      <div class="grade-filter-bar" id="gradeFilterBar"></div>
+    </div>
+    <div class="sidebar-hint">
+      <span>💡 點擊課程可<strong>拉近鏡頭看島</strong>或<strong>開啟互動網頁</strong></span>
+    </div>
+    <div class="sidebar-list" id="sidebarList"></div>
+  </aside>
+
+  <!-- 右側浮空島深度造景特寫與課程面板 -->
+  <aside class="panel" id="detailPanel" aria-label="浮空島主題造景與課程詳情">
+    <div class="panel-head">
+      <div class="panel-tag" id="panelTag">核心總覽島</div>
+      <div class="panel-title" id="panelTitle">天空之心</div>
+      <div class="panel-sub" id="panelSub">五大社會情緒學習浮空島核心樞紐</div>
+      <button class="panel-close" id="panelClose" title="關閉面板">✕</button>
+    </div>
+    <div class="panel-body" id="panelBody"></div>
+  </aside>
+
+  <!-- 自動巡航導覽橫幅 -->
+  <div class="tour-banner" id="tourBanner">
+    <span id="tourText">🎬 正在進行天空之心自動巡航導覽...</span>
+    <button id="btnStopTour">停止導覽</button>
+  </div>
+
+  <!-- 底部多功能工具列 -->
+  <div class="toolbar" role="toolbar" aria-label="3D 場景控制列">
+    <button class="tool-btn" id="btnOverview" title="回到群島全景視角">🌏 群島全景</button>
+    <button class="tool-btn" id="btnTopView" title="從高空俯瞰六座浮空島與雲海">🦅 俯瞰雲海</button>
+    <button class="tool-btn" id="btnTour" title="自動環島巡航導覽六座浮空島">🎬 空中巡航</button>
+    <div class="tool-sep"></div>
+    <button class="tool-btn" id="btnMatrix" title="檢視五大領域 × 一至六年級共 30 堂課程總表">📊 30 堂課程總表</button>
+    <button class="tool-btn" id="btnQuiz" title="測測看今天哪一座 SEL 浮空島最適合你">🧭 心靈適性測驗</button>
+    <button class="tool-btn" id="btnLinks" title="顯示五大 SEL 領域之間的跨域共鳴能量線">🔗 跨域能量線</button>
+    <div class="tool-sep"></div>
+    <button class="tool-btn" id="btnTime" title="切換晨曦雲海、暖金夕暮與星夜微光">☀️ 晨曦雲海</button>
+    <span class="tool-btn" id="mascotCounter" title="在 3D 浮空島上尋找並點擊 6 隻雲端心靈小松鼠">🐿️ 精靈 0/6</span>
+  </div>
+
+  <!-- 互動課程網頁全螢幕展示視窗 (Course Interactive Modal) -->
+  <div class="course-modal" id="courseModal" role="dialog" aria-modal="true">
+    <div class="course-modal-window">
+      <div class="cm-header">
+        <div class="cm-title-group">
+          <span class="cm-domain-pill" id="cmDomainPill">澄鏡浮島・自我覺察</span>
+          <div class="cm-title-text">
+            <h3 id="cmTitle">一年級－情緒報到</h3>
+            <span id="cmSubTitle">一年級社會情緒自我覺察學習</span>
+          </div>
+        </div>
+
+        <!-- 同領域 1~6 年級一鍵切換 -->
+        <div class="cm-grade-switcher" id="cmGradeSwitcher"></div>
+
+        <div class="cm-actions">
+          <button class="cm-btn" id="cmToggleInfoBtn" title="切換顯示左側教學目標與活動指引">📋 教學指引</button>
+          <a class="cm-btn" id="cmNewTabBtn" href="#" target="_blank" rel="noopener">↗ 新分頁全螢幕</a>
+          <a class="cm-btn" id="cmOrigSiteBtn" href="#" target="_blank" rel="noopener">🌐 原教學網頁面</a>
+          <button class="cm-btn cm-btn-close" id="cmCloseBtn">✕ 關閉返回浮空島</button>
+        </div>
+      </div>
+      <div class="cm-body">
+        <div class="cm-info-drawer" id="cmInfoDrawer"></div>
+        <div class="cm-iframe-wrap">
+          <iframe class="cm-iframe" id="cmIframe" src="about:blank" title="SEL 互動課程網頁"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 30 堂課程全景矩陣視窗 -->
+  <div class="modal-backdrop" id="matrixModal">
+    <div class="matrix-card">
+      <div class="matrix-head">
+        <div>
+          <h3 style="font-size:18px;font-weight:900;">📊 漚汪國小 SEL 社會情緒學習：五大浮空島 × 六個年級（30 堂互動課程總覽）</h3>
+          <span style="font-size:12px;color:var(--ink-soft);">點擊任一課程格，即可直接拉近 3D 浮空島鏡頭並開啟該堂互動網頁</span>
+        </div>
+        <button class="cm-btn cm-btn-close" id="matrixClose">✕ 關閉</button>
+      </div>
+      <div class="matrix-body" id="matrixBody"></div>
+    </div>
+  </div>
+
+  <!-- SEL 心靈浮空島適性測驗視窗 -->
+  <div class="modal-backdrop" id="quizModal">
+    <div class="quiz-card">
+      <button class="panel-close" id="quizClose" title="關閉">✕</button>
+      <h3>🧭 天空之心・心靈浮空島適性測驗</h3>
+      <div class="sub">回答 5 個日常情境小問題，找出最適合你今天探索的 SEL 主題浮空島！</div>
+      <div id="quizContent"></div>
+    </div>
+  </div>
+
+  <!-- Toast 動態提示 -->
+  <div class="toast" id="toast"></div>
+
+  <!-- 核心腳本：Three.js 本地引擎 + 30 堂課程資料庫 + 3D 浮空島場景 + 互動介面 -->
+  <script src="vendor/three.min.js"></script>
+  <script src="data.js"></script>
+  <script src="scene3d.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
